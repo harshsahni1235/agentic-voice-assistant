@@ -1,0 +1,27 @@
+# Dependencies
+/node_modules
+
+# Production
+/build
+/dist
+/tmp
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+test-0.log*
+
+# OS and Editors
+.DS_Store
+.idea
+.vscode
+*.suo
+*.ntvsps
+*.njsproj
+*.sln
+
+# Environment
+.env
