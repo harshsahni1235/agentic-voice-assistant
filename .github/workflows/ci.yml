@@ -10,6 +10,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+    OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,6 +23,15 @@ jobs:
         with:
           node-version: 18
           cache: "npm"
+
+      - name: Check env exists
+        run: |
+          if [ -z "$OPENAI_API_KEY" ]; then
+            echo "Missing key"
+            exit 1
+          else
+            echo "Key is set"
+          fi
 
       - name: Install dependencies
         run: npm install
