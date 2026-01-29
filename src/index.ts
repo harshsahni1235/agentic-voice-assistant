@@ -33,6 +33,14 @@ app.listen(3000, "0.0.0.0", () => {
   console.log("Server running on port 3000");
 });
 
+app.get("/version", (req, res) => {
+  res.json({
+    commit: "local",
+    deployedAt: new Date().toISOString()
+  });
+});
+
+
 async function ask() {
   rl.question("> ", async (userInput) => {
     const result = await orchestrator.run({ input: userInput });
