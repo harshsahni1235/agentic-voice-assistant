@@ -41,9 +41,9 @@ app.get("/version", (req, res) => {
   });
 });
 
-app.get("/upload", (req, res) => {
+app.get("/upload", async(req, res) => {
   try {
-    const result = upload();
+    const result = await upload();
     return res.status(200).json(result);
   } catch (error: any) {
     console.error("Error during upload:", error);
