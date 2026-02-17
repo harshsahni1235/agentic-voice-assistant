@@ -1,6 +1,7 @@
 import readline from "readline";
 import { orchestrator } from "./core/orchestrator";
 import express from "express";
+import { upload } from "./testUpload";
 
 const app = express();
 app.use(express.json());
@@ -40,6 +41,43 @@ app.get("/version", (req, res) => {
   });
 });
 
+app.get("/upload", (req, res) => {
+  try {
+    const result = upload();
+    return res.status(200).json(result);
+  } catch (error: any) {
+    console.error("Error during upload:", error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.post("/askAgent", async (req, res) => {
+  try {
+    const { input } = req.body;
+
+    if (!input) {
+      return res.status(400).json({
+        success: false,
+        message: "Input is required",
+      });
+    }
+
+    const result = await orchestrator.run({ input });
+
+    return res.status(200).json({
+      success: true,
+      output: result.output,
+    });
+  } catch (error: any) {
+    console.error("Agent error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+
 
 async function ask() {
   rl.question("> ", async (userInput) => {
@@ -50,6 +88,6 @@ async function ask() {
   });
 }
 
-console.log("Agentic Voice Assistant started. Type your message:");
-ask();
+// console.log("Agentic Voice Assistant started. Type your message:");
+// ask();
 
