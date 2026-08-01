@@ -1,6 +1,5 @@
 import { inputGuardrailAgent } from "../agent/guardrail.agent";
 import { plannerAgent } from "../agent/planner.agent";
-import { runtimeContext } from "../context/runtimeContext";
 import { explainTool } from "../tools/explain.tool";
 import { summarizeTool } from "../tools/summarize.tool";
 import { ttsTool } from "../tools/tts.tool";
@@ -8,9 +7,11 @@ import { OrchestratorInput, OrchestratorResult } from "./types";
 
 class Orchestrator {
   async run(input: OrchestratorInput): Promise<OrchestratorResult> {
+    const runtimeContext = input.context;
+
     console.log("Orchestrator received input:", input.input);
 
-    // 🔁 Human-in-the-Loop: Resume pending action
+    // 🔁 HUMAN-IN-THE-LOOP RESUME
     if (runtimeContext.hasPendingAction()) {
       const userDecision = input.input.trim().toLowerCase();
 
@@ -34,9 +35,8 @@ class Orchestrator {
       };
     }
 
-    // 1️⃣ Input Guardrail
+    // 1️⃣ INPUT GUARDRAIL
     const guardrail = await inputGuardrailAgent(input.input);
-    console.log("Guardrail result:", guardrail);
 
     if (!guardrail.allowed) {
       return {
@@ -44,41 +44,46 @@ class Orchestrator {
       };
     }
 
-    // 2️⃣ Planner decides what to do
+    // 2️⃣ PLANNER
     const decision = await plannerAgent(input.input);
-    console.log("Planner decision:", decision);
+
+    if (!decision.tools || decision.tools.length === 0) {
+      return { output: "Planner error: no tools selected." };
+    }
 
     let resultText = "";
 
-    // 3️⃣ Execute tools dynamically
+    // 3️⃣ TOOL EXECUTION
     for (const tool of decision.tools) {
       switch (tool) {
+
         case "explain_tool":
-          resultText = await explainTool(input.input);
+          resultText = await explainTool(input.input, runtimeContext);
           runtimeContext.setLastAgentOutput(resultText);
           break;
 
         case "summarize_tool":
-          resultText = await summarizeTool(input.input);
+          resultText = await summarizeTool(input.input, runtimeContext);
           runtimeContext.setLastAgentOutput(resultText);
           break;
 
         case "tts_tool":
+          const contentToNarrate =
+            runtimeContext.getLastAgentOutput() ?? input.input;
+
           if (decision.requiresApproval) {
-            const contentToNarrate = runtimeContext.getLastAgentOutput() ?? input.input;
-
             runtimeContext.setPendingAction({
-            tool: "tts_tool",
-            content: contentToNarrate,
-          });
-
+              tool: "tts_tool",
+              content: contentToNarrate,
+            });
 
             return {
-              output: "Approval required. Type 'approve' to continue or 'reject' to cancel.",
+              output: "__APPROVAL_REQUIRED__",
             };
-          } 
-          resultText = await ttsTool(input.input);
-          runtimeContext.setLastAgentOutput(resultText);  
+          }
+
+          resultText = await ttsTool(contentToNarrate);
+          runtimeContext.setLastAgentOutput(resultText);
           break;
 
         default:

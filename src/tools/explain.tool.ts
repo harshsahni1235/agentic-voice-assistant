@@ -5,14 +5,17 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function explainTool(input: string): Promise<string> {
+export async function explainTool(
+  input: string,
+  context: any
+): Promise<string> {
 
   let finalText = "";
 
   const stream = await client.chat.completions.create({
     model: "gpt-4o-mini",
     temperature: 0.4,
-    stream: true,    
+    stream: true,
     messages: [
       {
         role: "system",
@@ -27,13 +30,20 @@ export async function explainTool(input: string): Promise<string> {
   });
 
   // console.log("stream", stream)
+  
+  const writer = context?.getStreamWriter?.();
 
   for await (const chunk of stream) {
     // console.log('chunk', chunk)
 
     const delta = chunk.choices[0]?.delta?.content;
+
     if (delta) {
-      streamPrint(delta);
+      // 🔥 Stream to WebSocket if available
+      if (writer) {
+        writer(delta);
+      }
+
       finalText += delta;
     }
   }

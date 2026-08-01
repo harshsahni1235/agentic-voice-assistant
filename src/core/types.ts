@@ -1,5 +1,6 @@
 export type OrchestratorInput = {
   input: string;
+  context: any; // simplified for now
 };
 
 

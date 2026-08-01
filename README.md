@@ -16,3 +16,20 @@ This is AI based Agentic Voice Assistant using Node.js and OpenAI Agents SDK.
 ## Deployment Validation
 - `/version` endpoint to verify deployed commit
 
+This project is currently under active development.
+
+Implemented:
+- ✅ Planner Agent
+- ✅ Tool Calling
+- ✅ Guardrails
+- ✅ Human-in-the-Loop
+- ✅ Runtime Context
+- ✅ WebSocket Streaming
+- ✅ Text-to-Speech
+
+Upcoming:
+- ⏳ UI Improvements
+- ⏳ RAG Integration
+- ⏳ Authentication
+- ⏳ Production Deployment
+
